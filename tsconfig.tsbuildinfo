@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/config/db.ts","./src/controllers/auth.controller.ts","./src/controllers/cart.controller.ts","./src/controllers/order.controller.ts","./src/middleware/auth.middleware.ts","./src/models/user.model.ts","./src/routes/ cart.routes.ts","./src/routes/auth.routes.ts","./src/routes/order.routes.ts"],"errors":true,"version":"5.8.2"}

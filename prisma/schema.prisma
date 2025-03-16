@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(uuid())
+  username  String  @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  orders    Order[]  // One user can have multiple orders
+  cart      Cart?    // One user can have one cart
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id])
+  items      OrderItem[] // Relation to OrderItem
+  totalPrice Float
+  createdAt  DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String
+  name      String
+  quantity  Int
+  price     Float
+}
+
+model Cart {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime  @default(now())
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  name      String
+  quantity  Int
+  price     Float
+}
