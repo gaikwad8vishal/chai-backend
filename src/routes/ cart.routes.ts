@@ -1,13 +1,16 @@
-import express from "express";
+import { Router } from "express";
 import { addToCart, getCartItems, removeCartItem } from "../controllers/cart.controller";
+import { authenticate } from "../middleware/auth.middleware";
 
-const router = express.Router();
+const router = Router();
 
 //@ts-ignore
-router.post("/add", addToCart);
+router.post("/add", authenticate as any , addToCart as any); // Fixed type error
 //@ts-ignore
-router.get("/user-item", getCartItems);
+router.get("/user-items",authenticate, getCartItems as any); 
+//@ts-ignore
+router.delete("/remove/:itemId",authenticate, removeCartItem); 
 
-router.delete("/remove/:iztemId", removeCartItem);
-
-export default router;
+const cartRoutes = router;
+export default cartRoutes;
+    

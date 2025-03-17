@@ -19,6 +19,7 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!req.userId) {
             return res.status(403).json({ error: "Unauthorized" });
         }
+        // Find or create the cart
         let cart = yield prisma.cart.findUnique({
             where: { userId: req.userId }
         });
@@ -27,14 +28,32 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 data: { userId: req.userId }
             });
         }
-        const cartItem = yield prisma.cartItem.create({
-            data: {
+        // Check if the item already exists in the cart
+        const existingCartItem = yield prisma.cartItem.findFirst({
+            where: {
                 cartId: cart.id,
-                name,
-                quantity,
-                price,
+                name: name, // Matching item by name
             },
         });
+        let cartItem;
+        if (existingCartItem) {
+            // If item exists, update quantity
+            cartItem = yield prisma.cartItem.update({
+                where: { id: existingCartItem.id },
+                data: { quantity: existingCartItem.quantity + quantity }
+            });
+        }
+        else {
+            // If item doesn't exist, create new one
+            cartItem = yield prisma.cartItem.create({
+                data: {
+                    cartId: cart.id,
+                    name,
+                    quantity,
+                    price,
+                },
+            });
+        }
         res.json({ message: "Item added to cart", cartItem });
     }
     catch (error) {
@@ -65,6 +84,7 @@ exports.getCartItems = getCartItems;
 const removeCartItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { itemId } = req.params;
+        console.log("Received itemId:", itemId);
         yield prisma.cartItem.delete({ where: { id: itemId } });
         res.json({ message: "Item removed from cart" });
     }

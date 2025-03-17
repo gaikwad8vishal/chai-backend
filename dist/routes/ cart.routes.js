@@ -1,14 +1,14 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
+const express_1 = require("express");
 const cart_controller_1 = require("../controllers/cart.controller");
-const router = express_1.default.Router();
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const router = (0, express_1.Router)();
 //@ts-ignore
-router.post("/add", cart_controller_1.addToCart);
+router.post("/add", auth_middleware_1.authenticate, cart_controller_1.addToCart); // Fixed type error
 //@ts-ignore
-router.get("/", cart_controller_1.getCartItems);
-router.delete("/remove/:iztemId", cart_controller_1.removeCartItem);
-exports.default = router;
+router.get("/user-items", auth_middleware_1.authenticate, cart_controller_1.getCartItems);
+//@ts-ignore
+router.delete("/remove/:itemId", auth_middleware_1.authenticate, cart_controller_1.removeCartItem);
+const cartRoutes = router;
+exports.default = cartRoutes;

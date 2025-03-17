@@ -4,8 +4,6 @@ import { AuthRequest } from "../middleware/auth.middleware"; // Middleware for a
 
 const prisma = new PrismaClient();
 
-
-
 // ✅ Add item to cart
 export const addToCart = async (req: AuthRequest, res: Response) => {
   try {
@@ -15,24 +13,44 @@ export const addToCart = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
+    // Find or create the cart
     let cart = await prisma.cart.findUnique({
-        where: { userId: req.userId }
-      });
+      where: { userId: req.userId }
+    });
 
     if (!cart) {
-        cart = await prisma.cart.create({
-          data: { userId: req.userId }
-        });
-      }
+      cart = await prisma.cart.create({
+        data: { userId: req.userId }
+      });
+    }
 
-    const cartItem = await prisma.cartItem.create({
-      data: {
+    // Check if the item already exists in the cart
+    const existingCartItem = await prisma.cartItem.findFirst({
+      where: {
         cartId: cart.id,
-        name,
-        quantity,
-        price,
+        name: name, // Matching item by name
       },
     });
+
+    let cartItem;
+
+    if (existingCartItem) {
+      // If item exists, update quantity
+      cartItem = await prisma.cartItem.update({
+        where: { id: existingCartItem.id },
+        data: { quantity: existingCartItem.quantity + quantity }
+      });
+    } else {
+      // If item doesn't exist, create new one
+      cartItem = await prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          name,
+          quantity,
+          price,
+        },
+      });
+    }
 
     res.json({ message: "Item added to cart", cartItem });
   } catch (error) {
@@ -63,7 +81,9 @@ export const getCartItems = async (req: AuthRequest, res: Response) => {
 // ✅ Remove item from cart
 export const removeCartItem = async (req: AuthRequest, res: Response) => {
   try {
+    
     const { itemId } = req.params;
+    console.log("Received itemId:", itemId);
 
     await prisma.cartItem.delete({ where: { id: itemId } });
 

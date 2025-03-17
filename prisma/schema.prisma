@@ -7,23 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  DELIVERY_PERSON
+}
+
 model User {
   id        String  @id @default(uuid())
   username  String  @unique
-  password  String
+  password  String  
   createdAt DateTime @default(now())
+  role      UserRole @default(USER) // ENUM use karenge ab
+  isAdmin   Boolean @default(false)
+  orders    Order[]  
+  cart      Cart?    
+  isBlocked Boolean @default(false) 
+  ordersAssigned Order[] @relation(name: "DeliveryPersonOrders")
+}
 
-  orders    Order[]  // One user can have multiple orders
-  cart      Cart?    // One user can have one cart
+enum OrderStatus {
+  PENDING
+  ASSIGNED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
 }
 
 model Order {
   id         String      @id @default(uuid())
   userId     String
   user       User        @relation(fields: [userId], references: [id])
-  items      OrderItem[] // Relation to OrderItem
+  items      OrderItem[] 
   totalPrice Float
   createdAt  DateTime    @default(now())
+  status     OrderStatus @default(PENDING) 
+  assignedTo String?
+  deliveryPerson User? @relation(name: "DeliveryPersonOrders", fields: [assignedTo], references: [id])
 }
 
 model OrderItem {
