@@ -52,25 +52,32 @@ const placeOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.placeOrder = placeOrder;
 // ✅ Get User Orders
 const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
-        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
-            return res.status(403).json({ error: "Unauthorized" });
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
         }
-        console.log("Fetching orders for userId:", req.user.id); // ✅ Debugging log
         const orders = yield prisma.order.findMany({
-            where: { userId: req.user.id },
+            where: { userId: req.user.id }, // ✅ Fetch orders only for this user
+            select: {
+                id: true,
+                totalPrice: true,
+                status: true,
+                createdAt: true,
+                items: {
+                    select: {
+                        name: true,
+                        price: true,
+                        quantity: true, // ✅ Include quantity
+                    },
+                },
+            },
             orderBy: { createdAt: "desc" },
-            include: { items: true },
         });
-        if (orders.length === 0) {
-            return res.json({ message: "No orders found", orders: [] });
-        }
-        res.json({ orders });
+        res.json(orders);
     }
     catch (error) {
-        console.error("Error fetching orders:", error);
-        res.status(500).json({ error: "Something went wrong while fetching orders" });
+        console.error("Error fetching user orders:", error);
+        res.status(500).json({ error: "Something went wrong" });
     }
 });
 exports.getUserOrders = getUserOrders;

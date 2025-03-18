@@ -22,8 +22,7 @@ app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173" }));
 
 
-app.use("/user", authRoutes);
-app.use("/user", orderRoutes);
+app.use("/user", authRoutes, orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/admin", adminRoutes);
 //@ts-ignore

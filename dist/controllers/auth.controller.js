@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signin = exports.signup = void 0;
+exports.profile = exports.signin = exports.signup = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -44,13 +44,39 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user || !(yield bcryptjs_1.default.compare(password, user.password))) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, process.env.SECRET_KEY, {
+        const token = jsonwebtoken_1.default.sign({
+            userId: user.id,
+            role: user.role
+        }, process.env.SECRET_KEY, {
             expiresIn: "1d",
         });
-        res.json({ message: "Login successful", token });
+        console.log("role:", user.role);
+        res.json({ message: "Login successful", token, role: user.role });
     }
     catch (error) {
         res.status(500).json({ error: "Something went wrong to signin" });
     }
 });
 exports.signin = signin;
+// Profile
+const profile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log("User from token:", req.user); // Debugging
+        if (!req.user) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const user = yield prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { id: true, username: true },
+        });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        res.json(user);
+    }
+    catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+exports.profile = profile;

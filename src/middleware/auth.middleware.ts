@@ -8,6 +8,8 @@ export interface AuthRequest extends Request {
   user?: {
     id: string;
     role: "USER" | "ADMIN" | "DELIVERY_PERSON";
+    username: string;
+    name?: string;
   };
 }
 
@@ -39,6 +41,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 
     req.user = {
       id: user.id,
+      username: user.username,
       role: user.role, // "USER" | "ADMIN" | "DELIVERY_PERSON"
     };
 

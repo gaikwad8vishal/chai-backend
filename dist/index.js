@@ -20,8 +20,7 @@ const PORT = process.env.PORT || 3000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({ origin: "http://localhost:5173" }));
-app.use("/user", auth_routes_1.default);
-app.use("/user", order_routes_1.default);
+app.use("/user", auth_routes_1.default, order_routes_1.default);
 app.use("/api/cart", _cart_routes_1.default);
 app.use("/admin", admin_routes_1.default);
 //@ts-ignore

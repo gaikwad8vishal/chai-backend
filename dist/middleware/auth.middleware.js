@@ -38,6 +38,7 @@ const authenticate = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         }
         req.user = {
             id: user.id,
+            username: user.username,
             role: user.role, // "USER" | "ADMIN" | "DELIVERY_PERSON"
         };
         next();

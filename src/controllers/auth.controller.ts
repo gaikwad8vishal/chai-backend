@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import { AuthRequest } from "../middleware/auth.middleware";
 
 
 // Signup
@@ -40,14 +41,45 @@ export const signin = async (req: Request, res: Response) => {
         return res.status(401).json({ error: "Invalid credentials" });
       }
   
-      const token = jwt.sign({ userId: user.id ,  role: user.role  }, process.env.SECRET_KEY!, {
+      const token = jwt.sign({ 
+        userId: user.id ,  
+        role: user.role  
+
+      }, 
+      process.env.SECRET_KEY!, {
         expiresIn: "1d",
       });
-  
-      res.json({ message: "Login successful", token });
+      console.log("role:", user.role);
+      res.json({ message: "Login successful", token , role: user.role  });
     } catch (error) {
       res.status(500).json({ error: "Something went wrong to signin" });
     }
   };
-  
 
+
+
+// Profile
+  export const profile = async (req: AuthRequest, res: Response) => {
+    try {
+       console.log("User from token:", req.user); // Debugging
+ 
+       if (!req.user) {
+          return res.status(401).json({ error: "Unauthorized" });
+       }
+ 
+       const user = await prisma.user.findUnique({
+          where: { id: req.user.id },
+          select: { id: true, username: true },
+       });
+ 
+       if (!user) {
+          return res.status(404).json({ error: "User not found" });
+       }
+ 
+       res.json(user);
+    } catch (error) {
+       console.error("Error fetching profile:", error);
+       res.status(500).json({ error: "Something went wrong" });
+    }
+ };
+ 
