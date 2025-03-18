@@ -23,6 +23,7 @@ model User {
   orders    Order[]  
   cart      Cart?    
   isBlocked Boolean @default(false) 
+  location  String?
   ordersAssigned Order[] @relation(name: "DeliveryPersonOrders")
 }
 

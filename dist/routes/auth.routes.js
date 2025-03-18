@@ -10,4 +10,5 @@ router.post("/signup", auth_controller_1.signup);
 router.post("/signin", auth_controller_1.signin);
 // @ts-ignore
 router.get("/profile", auth_middleware_1.authenticate, auth_controller_2.profile);
+//@ts-ignore
 exports.default = router;

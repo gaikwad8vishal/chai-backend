@@ -8,6 +8,7 @@ import adminRoutes from "./routes/admin.routes";
 import deliveryRoutes from "./routes/delivery.routes";
 import { authenticate, isDeliveryPerson } from "./middleware/auth.middleware";
 import productRoutes from "./routes/productRoutes";
+import { getCityFromCoordinates } from "./controllers/auth.controller";
 
 
 
@@ -29,8 +30,19 @@ app.use("/admin", adminRoutes);
 app.use("/delivery",authenticate,isDeliveryPerson, deliveryRoutes);
 app.use(productRoutes); // 👈 Add this
 
+//@ts-ignore
+app.post("/save-location", async (req, res) => {
+  console.log("Request Body:", req.body); // ✅ Debugging Request Body
 
+  const { latitude, longitude } = req.body;
 
+  if (!latitude || !longitude) {
+    return res.status(400).json({ error: "Latitude and Longitude are required" });
+  }
+
+  const city = await getCityFromCoordinates(latitude, longitude);
+  res.json({ city });
+});
 
 
 app.listen(PORT, () => {

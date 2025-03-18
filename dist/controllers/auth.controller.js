@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.profile = exports.signin = exports.signup = void 0;
+exports.getCityFromCoordinates = exports.profile = exports.signin = exports.signup = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const axios_1 = __importDefault(require("axios"));
 // Signup
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -80,3 +81,25 @@ const profile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.profile = profile;
+// Get City from Coordinates
+const getCityFromCoordinates = (latitude, longitude) => __awaiter(void 0, void 0, void 0, function* () {
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    if (isNaN(lat) || isNaN(lon)) {
+        console.error("Invalid latitude or longitude");
+        return "Invalid Coordinates";
+    }
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+        const response = yield axios_1.default.get(url);
+        if (response.data.address) {
+            return response.data.address.city || response.data.address.town || response.data.address.village || "Unknown Location";
+        }
+        return "Unknown Location";
+    }
+    catch (error) {
+        console.error("Error fetching city:", error);
+        return "Unknown Location";
+    }
+});
+exports.getCityFromCoordinates = getCityFromCoordinates;

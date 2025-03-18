@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, signin } from "../controllers/auth.controller";
+import { signup, signin, getCityFromCoordinates } from "../controllers/auth.controller";
 import { profile } from "../controllers/auth.controller";
 import { authenticate } from "../middleware/auth.middleware";
 
@@ -10,4 +10,5 @@ router.post("/signup", signup);
 router.post("/signin", signin);
 // @ts-ignore
 router.get("/profile", authenticate, profile);
+//@ts-ignore
 export default router;
