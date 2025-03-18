@@ -36,8 +36,10 @@ const authenticate = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
                 error: "User not found"
             });
         }
-        req.userId = user.id;
-        req.isAdmin = user.isAdmin; // ✅ Attach admin role to request
+        req.user = {
+            id: user.id,
+            role: user.role, // "USER" | "ADMIN" | "DELIVERY_PERSON"
+        };
         next();
     }
     catch (error) {
@@ -49,11 +51,12 @@ const authenticate = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 exports.authenticate = authenticate;
 // ✅ Check if User is Admin
 const isAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.userId) {
+    var _a;
+    if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-        const user = yield prisma.user.findUnique({ where: { id: req.userId } });
+        const user = yield prisma.user.findUnique({ where: { id: req.user.id } });
         if (!user || user.role !== "ADMIN") {
             return res.status(403).json({ error: "Forbidden: Admins only" });
         }
@@ -66,7 +69,8 @@ const isAdmin = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.isAdmin = isAdmin;
 const isDeliveryPerson = (req, res, next) => {
-    if (req.role !== "DELIVERY_PERSON") {
+    var _a;
+    if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "DELIVERY_PERSON") {
         return res.status(403).json({
             error: "Access denied. Only delivery persons can access this route."
         });

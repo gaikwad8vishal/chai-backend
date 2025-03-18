@@ -9,18 +9,18 @@ export const addToCart = async (req: AuthRequest, res: Response) => {
   try {
     const { name, quantity, price } = req.body;
 
-    if (!req.userId) {
+    if (!req.user?.id) {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
     // Find or create the cart
     let cart = await prisma.cart.findUnique({
-      where: { userId: req.userId }
+      where: { userId: req.user.id },
     });
 
     if (!cart) {
       cart = await prisma.cart.create({
-        data: { userId: req.userId }
+        data: { userId: req.user.id }
       });
     }
 
@@ -62,12 +62,12 @@ export const addToCart = async (req: AuthRequest, res: Response) => {
 // ✅ Get user cart items
 export const getCartItems = async (req: AuthRequest, res: Response) => {
   try {
-    if (!req.userId) {
+    if (!req.user?.id) {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
     const cart = await prisma.cart.findUnique({
-      where: { userId: req.userId },
+      where: { userId: req.user.id },
       include: { items: true },
     });
 

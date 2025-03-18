@@ -14,18 +14,19 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // ✅ Add item to cart
 const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { name, quantity, price } = req.body;
-        if (!req.userId) {
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
             return res.status(403).json({ error: "Unauthorized" });
         }
         // Find or create the cart
         let cart = yield prisma.cart.findUnique({
-            where: { userId: req.userId }
+            where: { userId: req.user.id },
         });
         if (!cart) {
             cart = yield prisma.cart.create({
-                data: { userId: req.userId }
+                data: { userId: req.user.id }
             });
         }
         // Check if the item already exists in the cart
@@ -64,12 +65,13 @@ const addToCart = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.addToCart = addToCart;
 // ✅ Get user cart items
 const getCartItems = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        if (!req.userId) {
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
             return res.status(403).json({ error: "Unauthorized" });
         }
         const cart = yield prisma.cart.findUnique({
-            where: { userId: req.userId },
+            where: { userId: req.user.id },
             include: { items: true },
         });
         res.json((cart === null || cart === void 0 ? void 0 : cart.items) || []);

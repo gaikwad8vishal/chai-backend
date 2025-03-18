@@ -108,16 +108,24 @@ export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ 
+      where: { id } 
+    });
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ 
+      error: "User not found" 
+    });
 
     await prisma.user.delete({ where: { id } });
 
-    res.json({ message: "User deleted successfully" });
+    res.json({ 
+      message: "User deleted successfully" 
+    });
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Something went wrong" });
+    res.status(500).json({ 
+      error: "Something went wrong" 
+    });
   }
 };
 
@@ -139,7 +147,9 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
       res.json({ orders });
     } catch (error) {
       console.error("Error fetching all orders:", error);
-      res.status(500).json({ error: "Something went wrong" });
+      res.status(500).json({ 
+        error: "Something went wrong" 
+      });
     }
   };
   
@@ -327,3 +337,98 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+
+
+
+//Add a product
+
+export const addProduct = async (req: AuthRequest, res: Response) => {
+  try {
+    const { name, description, price, stock, imageUrl } = req.body;
+
+    // Check if user is admin (Middleware should handle this before calling the function)
+    if (!req.user?.role || req.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "Only admins can add products" });
+    }
+
+    // Check if product with same name exists
+    const existingProduct = await prisma.product.findUnique({ where: { name } });
+    if (existingProduct) {
+      return res.status(400).json({ error: "Product already exists" });
+    }
+
+    // Create the product
+    const product = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price,
+        stock,
+        imageUrl,
+      },
+    });
+
+    res.status(201).json({ 
+      message: "Product added successfully", product 
+    });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).json({ 
+      error: "Something went wrong to add product" 
+    });
+  }
+};
+
+
+
+
+export const updateProduct = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, description, price, stock } = req.body;
+
+  try {
+      // Find product
+      const product = await prisma.product.findUnique({ where: { id } });
+
+      if (!product) {
+          return res.status(404).json({ 
+            error: "Product not found" 
+          });
+      }
+
+      // Update product
+      const updatedProduct = await prisma.product.update({
+          where: { id },
+          data: { name, description, price, stock },
+      });
+
+      res.json({ 
+        message: "Product updated successfully", product: updatedProduct 
+      });
+  } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ 
+        error: "Something went wrong" 
+      });
+  }
+};
+
+
+
+
+export const getAllProducts = async (req: AuthRequest, res: Response) => {
+  try {
+      const products = await prisma.product.findMany();
+      res.status(200).json({ products });
+  } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ 
+        error: "Something went wrong" 
+      });
+  }
+};
+
+
+
+

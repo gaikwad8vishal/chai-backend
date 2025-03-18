@@ -13,8 +13,9 @@ exports.updateOrderDeliveryStatus = exports.getMyAssignedOrders = exports.getAss
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const deliveryPersonId = req.userId;
+        const deliveryPersonId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
         const orders = yield prisma.order.findMany({
             where: { assignedTo: deliveryPersonId },
             include: { user: true, items: true }
@@ -31,15 +32,16 @@ const getAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAssignedOrders = getAssignedOrders;
 const getMyAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        if (req.userRole !== "DELIVERY_PERSON") {
+        if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "DELIVERY_PERSON") {
             return res.status(403).json({
                 error: "Access denied"
             });
         }
         const orders = yield prisma.order.findMany({
             where: {
-                assignedTo: req.userId,
+                assignedTo: req.user.id,
                 status: { in: ["ASSIGNED", "OUT_FOR_DELIVERY"] }
             },
             include: { items: true, user: { select: { username: true } } },
@@ -53,16 +55,17 @@ const getMyAssignedOrders = (req, res) => __awaiter(void 0, void 0, void 0, func
 });
 exports.getMyAssignedOrders = getMyAssignedOrders;
 const updateOrderDeliveryStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { orderId, status } = req.body;
     try {
-        if (req.userRole !== "DELIVERY_PERSON") {
+        if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "DELIVERY_PERSON") {
             return res.status(403).json({ error: "Access denied" });
         }
         const order = yield prisma.order.findUnique({ where: { id: orderId } });
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
         }
-        if (order.assignedTo !== req.userId) {
+        if (order.assignedTo !== req.user.id) {
             return res.status(403).json({ error: "You can update only your assigned orders" });
         }
         if (!["OUT_FOR_DELIVERY", "DELIVERED"].includes(status)) {

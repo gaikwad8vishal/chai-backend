@@ -44,7 +44,7 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user || !(yield bcryptjs_1.default.compare(password, user.password))) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.SECRET_KEY, {
+        const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, process.env.SECRET_KEY, {
             expiresIn: "1d",
         });
         res.json({ message: "Login successful", token });

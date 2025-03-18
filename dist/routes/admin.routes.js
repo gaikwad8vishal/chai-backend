@@ -55,4 +55,15 @@ router.get("/orders/:userId", auth_middleware_1.authenticate, admin_controller_1
 // 🔹 Assign Delivery Person
 //@ts-ignore
 router.post("/assign-delivery", auth_middleware_1.authenticate, order_controller_1.assignDeliveryPerson);
+//@ts-ignore
+router.put("/update-role/:userId", auth_middleware_1.authenticate, admin_controller_1.updateUserRole);
+//@ts-ignore
+// ✅ Admin can add a product
+router.post("/add-product", auth_middleware_1.authenticate, admin_controller_1.addProduct);
+//@ts-ignore
+// ✅ Admin can update a product
+router.put("/update-product/:id", auth_middleware_1.authenticate, admin_controller_1.updateProduct);
+//@ts-ignore
+// ✅ Admin can view all products
+router.get("/all-products", auth_middleware_1.authenticate, admin_controller_1.getAllProducts);
 exports.default = router;

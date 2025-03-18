@@ -14,8 +14,9 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // ✅ Place Order (using token's userId)
 const placeOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        if (!req.userId) {
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
             return res.status(401).json({ error: "Unauthorized" });
         }
         const { items } = req.body;
@@ -29,7 +30,7 @@ const placeOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // Create order
         const order = yield prisma.order.create({
             data: {
-                userId: req.userId, // Using token's userId
+                userId: req.user.id, // Using token's userId
                 totalPrice,
                 items: {
                     create: items.map(item => ({
@@ -51,13 +52,14 @@ const placeOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.placeOrder = placeOrder;
 // ✅ Get User Orders
 const getUserOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        if (!req.userId) {
+        if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
             return res.status(403).json({ error: "Unauthorized" });
         }
-        console.log("Fetching orders for userId:", req.userId); // ✅ Debugging log
+        console.log("Fetching orders for userId:", req.user.id); // ✅ Debugging log
         const orders = yield prisma.order.findMany({
-            where: { userId: req.userId },
+            where: { userId: req.user.id },
             orderBy: { createdAt: "desc" },
             include: { items: true },
         });
