@@ -389,7 +389,9 @@ export const updateProduct = async (req: Request, res: Response) => {
 
   try {
       // Find product
-      const product = await prisma.product.findUnique({ where: { id } });
+      const product = await prisma.product.findUnique({ 
+        where: { id } 
+      });
 
       if (!product) {
           return res.status(404).json({ 
@@ -430,5 +432,26 @@ export const getAllProducts = async (req: AuthRequest, res: Response) => {
 };
 
 
+
+
+export const deleteProduct = async (req:AuthRequest, res:Response) => {
+  try {
+    const { id } = req.params;
+
+    // 🛑 Check if product exists
+    const existingProduct = await prisma.product.findUnique({ where: { id } });
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // 🚀 Delete the product
+    await prisma.product.delete({ where: { id } });
+
+    res.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 

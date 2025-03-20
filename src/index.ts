@@ -18,10 +18,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173" }));
 
+app.use(cors({
+  origin: "http://localhost:5173", // ✅ React frontend ka origin
+  credentials: true, // ✅ Cookies aur authentication allow karne ke liye
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+}));
 
 app.use("/user", authRoutes, orderRoutes);
 app.use("/api/cart", cartRoutes);

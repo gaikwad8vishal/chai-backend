@@ -1,6 +1,6 @@
 import express from "express";
 import { authenticate, isAdmin } from "../middleware/auth.middleware";
-import { addProduct, cancelOrder, deleteUser, getAllOrders, getAllProducts, getAllUsers, getCustomerOrders, getOrderStats, makeAdmin, toggleBlockUser, updateOrderStatus, updateProduct, updateUserRole } from "../controllers/admin.controller";
+import { addProduct, cancelOrder, deleteProduct, deleteUser, getAllOrders, getAllProducts, getAllUsers, getCustomerOrders, getOrderStats, makeAdmin, toggleBlockUser, updateOrderStatus, updateProduct, updateUserRole } from "../controllers/admin.controller";
 import { get } from "http";
 import { assignDeliveryPerson } from "../controllers/order.controller";
 
@@ -81,6 +81,9 @@ router.put("/update-product/:id", authenticate, updateProduct);
 // ✅ Admin can view all products
 router.get("/all-products", authenticate, getAllProducts);
 
+//@ts-ignore
+//admin can delete product 
+router.delete("/delete-product/:id" , authenticate, deleteProduct)
 
 export default router;
 

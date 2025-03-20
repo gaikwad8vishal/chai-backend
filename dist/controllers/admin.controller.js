@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProducts = exports.updateProduct = exports.addProduct = exports.updateUserRole = exports.getCustomerOrders = exports.getOrderStats = exports.cancelOrder = exports.updateOrderStatus = exports.getAllOrders = exports.deleteUser = exports.toggleBlockUser = exports.getAllUsers = exports.makeAdmin = void 0;
+exports.deleteProduct = exports.getAllProducts = exports.updateProduct = exports.addProduct = exports.updateUserRole = exports.getCustomerOrders = exports.getOrderStats = exports.cancelOrder = exports.updateOrderStatus = exports.getAllOrders = exports.deleteUser = exports.toggleBlockUser = exports.getAllUsers = exports.makeAdmin = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -370,3 +370,21 @@ const getAllProducts = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getAllProducts = getAllProducts;
+const deleteProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        // 🛑 Check if product exists
+        const existingProduct = yield prisma.product.findUnique({ where: { id } });
+        if (!existingProduct) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        // 🚀 Delete the product
+        yield prisma.product.delete({ where: { id } });
+        res.json({ message: "Product deleted successfully" });
+    }
+    catch (error) {
+        console.error("Error deleting product:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.deleteProduct = deleteProduct;

@@ -27,9 +27,13 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middlewares
-app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-app.use((0, cors_1.default)({ origin: "http://localhost:5173" }));
+app.use((0, cors_1.default)({
+    origin: "http://localhost:5173", // ✅ React frontend ka origin
+    credentials: true, // ✅ Cookies aur authentication allow karne ke liye
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+}));
 app.use("/user", auth_routes_1.default, order_routes_1.default);
 app.use("/api/cart", _cart_routes_1.default);
 app.use("/admin", admin_routes_1.default);
