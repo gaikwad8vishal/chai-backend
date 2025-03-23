@@ -17,7 +17,6 @@ const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const order_routes_1 = __importDefault(require("./routes/order.routes"));
-const _cart_routes_1 = __importDefault(require("./routes/ cart.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const delivery_routes_1 = __importDefault(require("./routes/delivery.routes"));
 const auth_middleware_1 = require("./middleware/auth.middleware");
@@ -35,7 +34,7 @@ app.use((0, cors_1.default)({
     allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
 }));
 app.use("/user", auth_routes_1.default, order_routes_1.default);
-app.use("/api/cart", _cart_routes_1.default);
+;
 app.use("/admin", admin_routes_1.default);
 //@ts-ignore
 app.use("/delivery", auth_middleware_1.authenticate, auth_middleware_1.isDeliveryPerson, delivery_routes_1.default);

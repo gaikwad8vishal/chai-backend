@@ -12,11 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.getAllProducts = exports.updateProduct = exports.addProduct = exports.updateUserRole = exports.getCustomerOrders = exports.getOrderStats = exports.cancelOrder = exports.updateOrderStatus = exports.getAllOrders = exports.deleteUser = exports.toggleBlockUser = exports.getAllUsers = exports.makeAdmin = void 0;
+exports.deleteProduct = exports.getAllProducts = exports.updateProduct = exports.addProduct = exports.updateUserRole = exports.getCustomerOrders = exports.groupOrdersByTimePeriod = exports.getOrderStats = exports.cancelOrder = exports.updateOrderStatus = exports.getAllOrders = exports.deleteUser = exports.toggleBlockUser = exports.getAllUsers = exports.makeAdmin = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
+//defining types for backend 
+var OrderStatus;
+(function (OrderStatus) {
+    OrderStatus["PENDING"] = "PENDING";
+    OrderStatus["DELIVERED"] = "DELIVERED";
+    OrderStatus["CANCELLED"] = "CANCELLED";
+})(OrderStatus || (OrderStatus = {}));
 const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.body;
     try {
@@ -201,26 +208,85 @@ const cancelOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.cancelOrder = cancelOrder;
+//statistics
 const getOrderStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
+        // Check if the user is an admin
         if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) || req.user.role !== "ADMIN") {
             return res.status(403).json({ error: "Access denied" });
         }
-        const totalOrders = yield prisma.order.count();
-        const pendingOrders = yield prisma.order.count({ where: { status: "PENDING" } });
-        const completedOrders = yield prisma.order.count({ where: { status: "DELIVERED" } });
-        const cancelledOrders = yield prisma.order.count({ where: { status: "CANCELLED" } });
-        const totalRevenue = yield prisma.order.aggregate({
-            _sum: { totalPrice: true },
-            where: { status: "DELIVERED" },
+        // Fetch all orders with their items
+        const orders = yield prisma.order.findMany({
+            include: {
+                items: true,
+                deliveryPerson: true, // Include delivery person details if needed
+            },
         });
+        // Total orders
+        const totalOrders = orders.length;
+        // Orders by status
+        const pendingOrders = orders.filter((order) => order.status === "PENDING").length;
+        const completedOrders = orders.filter((order) => order.status === "DELIVERED").length;
+        const cancelledOrders = orders.filter((order) => order.status === "CANCELLED").length;
+        // Total revenue (only from DELIVERED orders)
+        const totalRevenue = orders
+            .filter((order) => order.status === "DELIVERED")
+            .reduce((sum, order) => sum + order.totalPrice, 0);
+        // Average Order Value (AOV)
+        const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+        // Most popular products
+        const popularProducts = orders.reduce((acc, order) => {
+            order.items.forEach((item) => {
+                if (!acc[item.name])
+                    acc[item.name] = 0;
+                acc[item.name] += item.quantity;
+            });
+            return acc;
+        }, {});
+        const sortedPopularProducts = Object.entries(popularProducts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, quantity]) => ({ name, quantity }));
+        // Revenue by status
+        const revenueByStatus = orders.reduce((acc, order) => {
+            if (!acc[order.status])
+                acc[order.status] = 0;
+            acc[order.status] += order.totalPrice;
+            return acc;
+        }, {});
+        // Group orders by time period (day/week/month)
+        const { period = "day" } = req.query; // Default to daily stats
+        const groupedData = (0, exports.groupOrdersByTimePeriod)(orders, period);
+        // Delivery person performance (if applicable)
+        const deliveryPerformance = orders.reduce((acc, order) => {
+            if (order.deliveryPerson) {
+                const deliveryPersonId = order.deliveryPerson.id;
+                if (!acc[deliveryPersonId]) {
+                    acc[deliveryPersonId] = {
+                        name: order.deliveryPerson.username,
+                        deliveredOrders: 0,
+                        totalRevenue: 0,
+                    };
+                }
+                if (order.status === "DELIVERED") {
+                    acc[deliveryPersonId].deliveredOrders++;
+                    acc[deliveryPersonId].totalRevenue += order.totalPrice;
+                }
+            }
+            return acc;
+        }, {});
+        // Send response
         res.json({
             totalOrders,
             pendingOrders,
             completedOrders,
             cancelledOrders,
-            totalRevenue: totalRevenue._sum.totalPrice || 0,
+            totalRevenue,
+            averageOrderValue,
+            popularProducts: sortedPopularProducts,
+            revenueByStatus,
+            groupedData,
+            deliveryPerformance: Object.values(deliveryPerformance),
         });
     }
     catch (error) {
@@ -229,6 +295,32 @@ const getOrderStats = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getOrderStats = getOrderStats;
+// Helper function to group orders by time period
+const groupOrdersByTimePeriod = (orders, period) => {
+    const grouped = {};
+    orders.forEach((order) => {
+        const date = new Date(order.createdAt);
+        let key; // Explicitly declare `key` as a string
+        if (period === "day") {
+            key = date.toLocaleDateString(); // Group by day
+        }
+        else if (period === "week") {
+            key = `${date.getFullYear()}-W${Math.ceil((date.getDate() + 6 - date.getDay()) / 7)}`; // Group by week
+        }
+        else if (period === "month") {
+            key = `${date.getFullYear()}-${date.getMonth() + 1}`; // Group by month
+        }
+        else {
+            throw new Error(`Invalid period: ${period}`); // Handle invalid periods
+        }
+        if (!grouped[key])
+            grouped[key] = { orders: 0, revenue: 0 };
+        grouped[key].orders++;
+        grouped[key].revenue += order.totalPrice;
+    });
+    return grouped;
+};
+exports.groupOrdersByTimePeriod = groupOrdersByTimePeriod;
 const getCustomerOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { userId } = req.params;
@@ -334,7 +426,9 @@ const updateProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { name, description, price, stock } = req.body;
     try {
         // Find product
-        const product = yield prisma.product.findUnique({ where: { id } });
+        const product = yield prisma.product.findUnique({
+            where: { id }
+        });
         if (!product) {
             return res.status(404).json({
                 error: "Product not found"

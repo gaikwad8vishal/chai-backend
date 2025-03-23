@@ -27,8 +27,7 @@ app.use(cors({
   allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
 }));
 
-app.use("/user", authRoutes, orderRoutes);
-app.use("/api/cart", cartRoutes);
+app.use("/user", authRoutes, orderRoutes);;
 app.use("/admin", adminRoutes);
 //@ts-ignore
 app.use("/delivery",authenticate,isDeliveryPerson, deliveryRoutes);

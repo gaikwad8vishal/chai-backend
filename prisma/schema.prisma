@@ -7,6 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum OrderStatus {
+  PENDING
+  ASSIGNED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+
 enum UserRole {
   USER
   ADMIN
@@ -18,28 +27,20 @@ model User {
   username  String  @unique
   password  String  
   createdAt DateTime @default(now())
-  role      UserRole @default(USER) // ENUM use karenge ab
+  role      UserRole @default(USER) 
   isAdmin   Boolean @default(false)
-  orders    Order[]  
-  cart      Cart?    
   isBlocked Boolean @default(false) 
   location  String?
+  orders    Order[]  @relation("UserOrders") // No onDelete here
+  cart      Cart?    @relation("UserCart") 
   ordersAssigned Order[] @relation(name: "DeliveryPersonOrders")
 }
-
-enum OrderStatus {
-  PENDING
-  ASSIGNED
-  OUT_FOR_DELIVERY
-  DELIVERED
-  CANCELLED
-}
-
 model Order {
   id         String      @id @default(uuid())
   userId     String
-  user       User        @relation(fields: [userId], references: [id])
-  items      OrderItem[] 
+  user       User        @relation(name: "UserOrders", fields: [userId], references: [id], onDelete: Cascade) 
+  items      OrderItem[] @relation("OrderItems") // No onDelete here
+
   totalPrice Float
   createdAt  DateTime    @default(now())
   status     OrderStatus @default(PENDING) 
@@ -47,32 +48,33 @@ model Order {
   deliveryPerson User? @relation(name: "DeliveryPersonOrders", fields: [assignedTo], references: [id])
 }
 
+
 model OrderItem {
   id        String   @id @default(uuid())
-  order     Order    @relation(fields: [orderId], references: [id])
+  order     Order    @relation("OrderItems", fields: [orderId], references: [id], onDelete: Cascade)
   orderId   String
   name      String
   quantity  Int
   price     Float
 }
-
 model Cart {
-  id        String    @id @default(uuid())
-  userId    String    @unique
-  user      User      @relation(fields: [userId], references: [id])
-  items     CartItem[]
-  createdAt DateTime  @default(now())
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(name: "UserCart", fields: [userId], references: [id], onDelete: Cascade) 
+  items     CartItem[] @relation("CartItems") // Fixed relation
+  createdAt DateTime   @default(now())
 }
+
+
 
 model CartItem {
   id        String   @id @default(uuid())
   cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id])
+  cart      Cart     @relation(name: "CartItems", fields: [cartId], references: [id], onDelete: Cascade) // Fixed relation
   name      String
   quantity  Int
   price     Float
 }
-
 
 
 model Product {

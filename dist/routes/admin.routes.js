@@ -16,13 +16,13 @@ router.get("/dashboard", auth_middleware_1.authenticate, auth_middleware_1.isAdm
     });
 });
 //@ts-ignore
-router.post("/make-admin", auth_middleware_1.authenticate, admin_controller_1.makeAdmin);
+// router.post("/make-admin", authenticate, makeAdmin);
 //@ts-ignore
 router.get("/users", auth_middleware_1.authenticate, admin_controller_1.getAllUsers); // ✅ Get all users
 //@ts-ignore
-router.patch("/users/block-unblock:id", auth_middleware_1.authenticate, admin_controller_1.toggleBlockUser); // ✅ Block/Unblock User
+router.patch("/user/block-unblock/:id", auth_middleware_1.authenticate, admin_controller_1.toggleBlockUser); // ✅ Block/Unblock User
 //@ts-ignore
-router.delete("/users/:id", auth_middleware_1.authenticate, admin_controller_1.deleteUser); // ✅ Delete User
+router.delete("/user/delete/:id", auth_middleware_1.authenticate, admin_controller_1.deleteUser); // ✅ Delete User
 // ✅ Admin can view all orders
 //@ts-ignore
 router.get("/all-orders", auth_middleware_1.authenticate, (req, res, next) => {
@@ -46,9 +46,16 @@ router.put("/update-status", auth_middleware_1.authenticate, (req, res, next) =>
 //@ts-ignore
 // ✅ Admin can cancel order
 router.put("/cancel/:id", auth_middleware_1.authenticate, admin_controller_1.cancelOrder);
-// 🔹 Order Statistics Route
 //@ts-ignore
+// Route: Get order statistics
+// Only authenticated users can access this route
 router.get("/order-stats", auth_middleware_1.authenticate, admin_controller_1.getOrderStats);
+//@ts-ignore
+// Route: Get specific customer's order history
+router.get("/orders/:userId", auth_middleware_1.authenticate, admin_controller_1.getCustomerOrders);
+//@ts-ignore
+// Route: Get orders grouped by time period
+router.get("/orders-by-period", auth_middleware_1.authenticate, admin_controller_1.groupOrdersByTimePeriod); // Orders grouped by time period
 // 🔹 Specific Customer Order History
 //@ts-ignore
 router.get("/orders/:userId", auth_middleware_1.authenticate, admin_controller_1.getCustomerOrders);
@@ -65,7 +72,7 @@ router.post("/add-product", auth_middleware_1.authenticate, admin_controller_1.a
 router.put("/update-product/:id", auth_middleware_1.authenticate, admin_controller_1.updateProduct);
 //@ts-ignore
 // ✅ Admin can view all products
-router.get("/all-products", auth_middleware_1.authenticate, admin_controller_1.getAllProducts);
+router.get("/all-products", admin_controller_1.getAllProducts);
 //@ts-ignore
 //admin can delete product 
 router.delete("/delete-product/:id", auth_middleware_1.authenticate, admin_controller_1.deleteProduct);

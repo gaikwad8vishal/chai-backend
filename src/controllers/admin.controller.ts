@@ -7,6 +7,32 @@ import { AuthRequest } from "../middleware/auth.middleware";
 dotenv.config();
 const prisma = new PrismaClient();
 
+//defining types for backend 
+
+
+enum OrderStatus {
+  PENDING = "PENDING",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
+}
+
+// Define OrderItem interface
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+// Define Order interface
+interface Order {
+  id: string;
+  totalPrice: number;
+  status: OrderStatus;
+  createdAt: string | Date;
+  items: OrderItem[];
+}
+
   export const makeAdmin = async (req: Request, res: Response) => {
     const { userId } = req.body;
   
@@ -228,36 +254,135 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
 };
 
 
-
+//statistics
 
 export const getOrderStats = async (req: AuthRequest, res: Response) => {
   try {
-      if (!req.user?.role || req.user.role !== "ADMIN") {
-          return res.status(403).json({ error: "Access denied" });
+    // Check if the user is an admin
+    if (!req.user?.role || req.user.role !== "ADMIN") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    // Fetch all orders with their items
+    const orders = await prisma.order.findMany({
+      include: {
+        items: true,
+        deliveryPerson: true, // Include delivery person details if needed
+      },
+    });
+
+    // Total orders
+    const totalOrders = orders.length;
+
+    // Orders by status
+    const pendingOrders = orders.filter((order) => order.status === "PENDING").length;
+    const completedOrders = orders.filter((order) => order.status === "DELIVERED").length;
+    const cancelledOrders = orders.filter((order) => order.status === "CANCELLED").length;
+
+    // Total revenue (only from DELIVERED orders)
+    const totalRevenue = orders
+      .filter((order) => order.status === "DELIVERED")
+      .reduce((sum, order) => sum + order.totalPrice, 0);
+
+    // Average Order Value (AOV)
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    // Most popular products
+    const popularProducts = orders.reduce((acc: Record<string, number>, order) => {
+      order.items.forEach((item) => {
+        if (!acc[item.name]) acc[item.name] = 0;
+        acc[item.name] += item.quantity;
+      });
+      return acc;
+    }, {} as Record<string, number>);
+    
+
+    const sortedPopularProducts = Object.entries(popularProducts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, quantity]) => ({ name, quantity }));
+
+    // Revenue by status
+    const revenueByStatus = orders.reduce(
+      (acc, order) => {
+        if (!acc[order.status]) acc[order.status] = 0;
+        acc[order.status] += order.totalPrice;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    // Group orders by time period (day/week/month)
+    const { period = "day" } = req.query; // Default to daily stats
+    const groupedData = groupOrdersByTimePeriod(orders, period as string);
+
+    // Delivery person performance (if applicable)
+    const deliveryPerformance = orders.reduce((acc, order) => {
+      if (order.deliveryPerson) {
+        const deliveryPersonId = order.deliveryPerson.id;
+        if (!acc[deliveryPersonId]) {
+          acc[deliveryPersonId] = {
+            name: order.deliveryPerson.username,
+            deliveredOrders: 0,
+            totalRevenue: 0,
+          };
+        }
+        if (order.status === "DELIVERED") {
+          acc[deliveryPersonId].deliveredOrders++;
+          acc[deliveryPersonId].totalRevenue += order.totalPrice;
+        }
       }
+      return acc;
+    }, {} as Record<string, { name: string; deliveredOrders: number; totalRevenue: number }>);
 
-      const totalOrders = await prisma.order.count();
-      const pendingOrders = await prisma.order.count({ where: { status: "PENDING" } });
-      const completedOrders = await prisma.order.count({ where: { status: "DELIVERED" } });
-      const cancelledOrders = await prisma.order.count({ where: { status: "CANCELLED" } });
-
-      const totalRevenue = await prisma.order.aggregate({
-          _sum: { totalPrice: true },
-          where: { status: "DELIVERED" },
-      });
-
-      res.json({
-          totalOrders,
-          pendingOrders,
-          completedOrders,
-          cancelledOrders,
-          totalRevenue: totalRevenue._sum.totalPrice || 0,
-      });
+    // Send response
+    res.json({
+      totalOrders,
+      pendingOrders,
+      completedOrders,
+      cancelledOrders,
+      totalRevenue,
+      averageOrderValue,
+      popularProducts: sortedPopularProducts,
+      revenueByStatus,
+      groupedData,
+      deliveryPerformance: Object.values(deliveryPerformance),
+    });
   } catch (error) {
-      console.error("Error fetching order stats:", error);
-      res.status(500).json({ error: "Something went wrong" });
+    console.error("Error fetching order stats:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+// Helper function to group orders by time period
+
+export const groupOrdersByTimePeriod = (orders: any[], period: string) => {
+  const grouped = {} as Record<string, { orders: number; revenue: number }>;
+
+  orders.forEach((order) => {
+    const date = new Date(order.createdAt);
+    let key: string; // Explicitly declare `key` as a string
+
+    if (period === "day") {
+      key = date.toLocaleDateString(); // Group by day
+    } else if (period === "week") {
+      key = `${date.getFullYear()}-W${Math.ceil(
+        (date.getDate() + 6 - date.getDay()) / 7
+      )}`; // Group by week
+    } else if (period === "month") {
+      key = `${date.getFullYear()}-${date.getMonth() + 1}`; // Group by month
+    } else {
+      throw new Error(`Invalid period: ${period}`); // Handle invalid periods
+    }
+
+    if (!grouped[key]) grouped[key] = { orders: 0, revenue: 0 };
+    grouped[key].orders++;
+    grouped[key].revenue += order.totalPrice;
+  });
+
+  return grouped;
+};
+
+
 
 
 export const getCustomerOrders = async (req: AuthRequest, res: Response) => {
@@ -342,6 +467,7 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
 
 
 //Add a product
+
 
 export const addProduct = async (req: AuthRequest, res: Response) => {
   try {
