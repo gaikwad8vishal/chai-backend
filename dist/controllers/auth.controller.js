@@ -51,7 +51,6 @@ const signin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }, process.env.SECRET_KEY, {
             expiresIn: "1d",
         });
-        console.log("role:", user.role);
         res.json({ message: "Login successful", token, role: user.role });
     }
     catch (error) {
@@ -62,7 +61,6 @@ exports.signin = signin;
 // Profile
 const profile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("User from token:", req.user); // Debugging
         if (!req.user) {
             return res.status(401).json({ error: "Unauthorized" });
         }

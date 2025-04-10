@@ -37,7 +37,6 @@ interface Order {
     const { userId } = req.body;
   
     try {
-      console.log("Received userId:", userId);
   
       if (!userId) {
         return res.status(400).json({ 
@@ -184,7 +183,6 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
 
   export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
     const { id } = req.body;
-    console.log("Received order ID:", id);
     const { status } = req.body;
   
     if (!req.user?.role || req.user.role !== "ADMIN") {
@@ -498,7 +496,7 @@ export const addProduct = async (req: AuthRequest, res: Response) => {
     res.status(201).json({ 
       message: "Product added successfully", product 
     });
-    
+
   } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ 

@@ -27,7 +27,6 @@ var OrderStatus;
 const makeAdmin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.body;
     try {
-        console.log("Received userId:", userId);
         if (!userId) {
             return res.status(400).json({
                 error: "User ID is required"
@@ -147,7 +146,6 @@ exports.getAllOrders = getAllOrders;
 const updateOrderStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { id } = req.body;
-    console.log("Received order ID:", id);
     const { status } = req.body;
     if (!((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) || req.user.role !== "ADMIN") {
         return res.status(403).json({

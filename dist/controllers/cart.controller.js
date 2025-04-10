@@ -86,7 +86,6 @@ exports.getCartItems = getCartItems;
 const removeCartItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { itemId } = req.params;
-        console.log("Received itemId:", itemId);
         yield prisma.cartItem.delete({ where: { id: itemId } });
         res.json({ message: "Item removed from cart" });
     }

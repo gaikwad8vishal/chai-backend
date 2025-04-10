@@ -49,7 +49,6 @@ export const signin = async (req: Request, res: Response) => {
       process.env.SECRET_KEY!, {
         expiresIn: "1d",
       });
-      console.log("role:", user.role);
       res.json({ message: "Login successful", token , role: user.role  });
     } catch (error) {
       res.status(500).json({ error: "Something went wrong to signin" });
@@ -61,7 +60,6 @@ export const signin = async (req: Request, res: Response) => {
 // Profile
   export const profile = async (req: AuthRequest, res: Response) => {
     try {
-       console.log("User from token:", req.user); // Debugging
  
        if (!req.user) {
           return res.status(401).json({ error: "Unauthorized" });

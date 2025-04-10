@@ -41,7 +41,6 @@ app.use("/delivery", auth_middleware_1.authenticate, auth_middleware_1.isDeliver
 app.use(productRoutes_1.default); // 👈 Add this
 //@ts-ignore
 app.post("/save-location", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Request Body:", req.body); // ✅ Debugging Request Body
     const { latitude, longitude } = req.body;
     if (!latitude || !longitude) {
         return res.status(400).json({ error: "Latitude and Longitude are required" });
