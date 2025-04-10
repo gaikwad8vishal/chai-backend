@@ -498,6 +498,7 @@ export const addProduct = async (req: AuthRequest, res: Response) => {
     res.status(201).json({ 
       message: "Product added successfully", product 
     });
+    
   } catch (error) {
     console.error("Error adding product:", error);
     res.status(500).json({ 

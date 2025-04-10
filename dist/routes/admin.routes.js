@@ -71,7 +71,7 @@ router.post("/add-product", auth_middleware_1.authenticate, admin_controller_1.a
 // ✅ Admin can update a product
 router.put("/update-product/:id", auth_middleware_1.authenticate, admin_controller_1.updateProduct);
 //@ts-ignore
-// ✅ Admin can view all products
+// ✅ All user can view all products
 router.get("/all-products", admin_controller_1.getAllProducts);
 //@ts-ignore
 //admin can delete product 
