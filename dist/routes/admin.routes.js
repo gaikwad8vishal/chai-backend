@@ -25,14 +25,7 @@ router.patch("/user/block-unblock/:id", auth_middleware_1.authenticate, admin_co
 router.delete("/user/delete/:id", auth_middleware_1.authenticate, admin_controller_1.deleteUser); // ✅ Delete User
 // ✅ Admin can view all orders
 //@ts-ignore
-router.get("/all-orders", auth_middleware_1.authenticate, (req, res, next) => {
-    //@ts-ignore
-    if (!req.isAdmin)
-        return res.status(403).json({
-            error: "Forbidden: Admins only"
-        });
-    next();
-}, admin_controller_1.getAllOrders);
+router.get("/all-orders", auth_middleware_1.authenticate, admin_controller_1.getAllOrders);
 //@ts-ignore
 // ✅ Admin can update order status
 router.put("/update-status", auth_middleware_1.authenticate, (req, res, next) => {

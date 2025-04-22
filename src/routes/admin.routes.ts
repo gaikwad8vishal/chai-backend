@@ -28,13 +28,7 @@ router.delete("/user/delete/:id", authenticate,  deleteUser); // ✅ Delete User
 // ✅ Admin can view all orders
 //@ts-ignore
 
-router.get("/all-orders", authenticate, (req, res, next) => {
-    //@ts-ignore
-    if (!req.isAdmin) return res.status(403).json({ 
-        error: "Forbidden: Admins only" 
-    });
-    next();
-  }, getAllOrders);
+router.get("/all-orders", authenticate,  getAllOrders);
 
 
 //@ts-ignore
@@ -95,6 +89,10 @@ router.get("/all-products", getAllProducts);
 router.delete("/delete-product/:id" , authenticate, deleteProduct)
 
 export default router;
+
+
+ 
+
 
 
 
