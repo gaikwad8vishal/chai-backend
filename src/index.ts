@@ -21,8 +21,9 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 
 app.use(cors({
-  origin: "*", // ✅ React frontend ka origin
-  credentials: true, // ✅ Cookies aur authentication allow karne ke liye
+  origin: "*", // Allow all origins (public access for anyone)
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Explicitly allow these methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers like Authorization for JWT
 }));
 
 app.use("/user", authRoutes, orderRoutes);;
