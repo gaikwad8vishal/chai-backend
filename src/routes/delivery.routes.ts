@@ -9,8 +9,8 @@ const router = express.Router();
 //@ts-ignore
 router.get("/my-orders", authenticate, isDeliveryPerson, getAssignedOrders);
 //@ts-ignore
-router.get("/my-orders", authenticate,isDeliveryPerson, getMyAssignedOrders); // ✅ Assigned orders dekhne ke liye
+router.get("/my-orders", authenticate,isDeliveryPerson, getMyAssignedOrders); // Assigned orders dekhne ke liye
 //@ts-ignore
-router.patch("/update-status", authenticate,isDeliveryPerson, updateOrderDeliveryStatus); // ✅ Status update karne ke liye
+router.patch("/update-status", authenticate,isDeliveryPerson, updateOrderDeliveryStatus); // Status update karne ke liye
 
 export default router;

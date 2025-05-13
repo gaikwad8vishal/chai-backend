@@ -213,7 +213,7 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
 
     try {
-        // ✅ Find order
+        // Find order
         const order = await prisma.order.findUnique({
             where: { id },
         });
@@ -222,21 +222,21 @@ export const getAllOrders = async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ error: "Order not found" });
         }
 
-        // ✅ If user is not admin, check if this order belongs to them
+        // If user is not admin, check if this order belongs to them
         if (!req.user?.role || (req.user.role !== "ADMIN" && order.userId !== req.user.id)) {
             return res.status(403).json({ 
               error: "You can only cancel your own orders"
             });
         }
 
-        // ✅ Check if order is already delivered
+        // Check if order is already delivered
         if (order.status === "DELIVERED") {
             return res.status(400).json({ 
               error: "Cannot cancel a delivered order" 
             });
         }
 
-        // ✅ Update order status to "CANCELLED"
+        // Update order status to "CANCELLED"
         const cancelledOrder = await prisma.order.update({
             where: { id },
             data: { status: "CANCELLED" },
@@ -417,7 +417,7 @@ export const getCustomerOrders = async (req: AuthRequest, res: Response) => {
 
 export const updateUserRole = async (req: AuthRequest, res: Response) => {
   try {
-    // ✅ Admin Check
+    // Admin Check
     if (!req.user || req.user.role !== "ADMIN") {
       return res.status(403).json({ error: "Only admin can update user roles" });
     }
@@ -425,13 +425,13 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     const { userId } = req.params; // User ID from URL params
     const { role } = req.body; // New role from request body
 
-    // ✅ Validate Role
+    // Validate Role
     const validRoles = ["USER", "DELIVERY_PERSON", "ADMIN"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ error: "Invalid role provided" });
     }
 
-    // ✅ Find Existing User
+    // Find Existing User
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -440,12 +440,12 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // ✅ If User is Already the Given Role, No Need to Update
+    // If User is Already the Given Role, No Need to Update
     if (existingUser.role === role) {
       return res.status(400).json({ error: `User is already a ${role}` });
     }
 
-    // ✅ Update User Role
+    // Update User Role
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { role },

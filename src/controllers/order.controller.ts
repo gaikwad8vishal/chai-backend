@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { AuthRequest } from "../middleware/auth.middleware"; // ✅ Ensure type safety
+import { AuthRequest } from "../middleware/auth.middleware"; // Ensure type safety
 
 const prisma = new PrismaClient();
 
-// ✅ Place Order (using token's userId)
+// Place Order (using token's userId)
 export const placeOrder = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -45,7 +45,7 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ✅ Get User Orders
+// Get User Orders
 
 export const getUserOrders = async (req: AuthRequest, res: Response) => {
   try {
@@ -54,17 +54,17 @@ export const getUserOrders = async (req: AuthRequest, res: Response) => {
     }
 
     const orders = await prisma.order.findMany({
-      where: { userId: req.user.id }, // ✅ Fetch orders only for this user
+      where: { userId: req.user.id }, // Fetch orders only for this user
       select: {
         id: true,
         totalPrice: true,
         status: true,
         createdAt: true,
-        items: {   // ✅ Include order items with product details
+        items: {   // Include order items with product details
           select: {
             name: true,
             price: true,
-            quantity: true, // ✅ Include quantity
+            quantity: true, // Include quantity
           },
         },
       },

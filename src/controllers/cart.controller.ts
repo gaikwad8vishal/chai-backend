@@ -4,7 +4,7 @@ import { AuthRequest } from "../middleware/auth.middleware"; // Middleware for a
 
 const prisma = new PrismaClient();
 
-// ✅ Add item to cart
+// Add item to cart
 export const addToCart = async (req: AuthRequest, res: Response) => {
   try {
     const { name, quantity, price } = req.body;
@@ -59,7 +59,7 @@ export const addToCart = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ✅ Get user cart items
+// Get user cart items
 export const getCartItems = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user?.id) {
@@ -78,7 +78,7 @@ export const getCartItems = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ✅ Remove item from cart
+// Remove item from cart
 export const removeCartItem = async (req: AuthRequest, res: Response) => {
   try {
     
@@ -93,7 +93,7 @@ export const removeCartItem = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// ✅ Clear cart after checkout
+// Clear cart after checkout
 export const clearCart = async (userId: string) => {
   await prisma.cartItem.deleteMany({
     where: { cart: { userId } },

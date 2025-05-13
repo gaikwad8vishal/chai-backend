@@ -27,10 +27,10 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   const token = authHeader.split(" ")[1];
 
   try {
-    // ✅ Decode token to get userId
+    // Decode token to get userId
     const decoded = jwt.verify(token, process.env.SECRET_KEY!) as { userId: string };
 
-    // ✅ Fetch user from database
+    // Fetch user from database
     const user = await prisma.user.findUnique({
        where: { id: decoded.userId } 
       });
@@ -56,7 +56,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 };
 
 
-// ✅ Check if User is Admin
+// Check if User is Admin
 export const isAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   
   if (!req.user?.id) {

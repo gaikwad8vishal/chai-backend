@@ -6,7 +6,7 @@ import { assignDeliveryPerson } from "../controllers/order.controller";
 
 const router = express.Router();
 
-// ✅ Only admins can access this route
+//  Only admins can access this route
 //@ts-ignore
 router.get("/dashboard", authenticate, isAdmin, (req, res) => {
   res.json({ 
@@ -16,23 +16,23 @@ router.get("/dashboard", authenticate, isAdmin, (req, res) => {
 
 //@ts-ignore
 // router.post("/make-admin", authenticate, makeAdmin);
+
 //@ts-ignore
-router.get("/users", authenticate,  getAllUsers); // ✅ Get all users
+router.get("/users", authenticate,  getAllUsers); // Get all users
 //@ts-ignore
-router.patch("/user/block-unblock/:id", authenticate, toggleBlockUser); // ✅ Block/Unblock User
+router.patch("/user/block-unblock/:id", authenticate, toggleBlockUser); // Block/Unblock User
 //@ts-ignore
-router.delete("/user/delete/:id", authenticate,  deleteUser); // ✅ Delete User
+router.delete("/user/delete/:id", authenticate,  deleteUser); // Delete User
 
 
 
-// ✅ Admin can view all orders
+// Admin can view all orders
 //@ts-ignore
-
 router.get("/all-orders", authenticate,  getAllOrders);
 
+// Admin can update order status
 
 //@ts-ignore
-// ✅ Admin can update order status
 router.put("/update-status", authenticate, (req, res, next) => {
     //@ts-ignore
     if (!req.isAdmin) return res.status(403).json({ 
@@ -42,7 +42,7 @@ router.put("/update-status", authenticate, (req, res, next) => {
   }, updateOrderStatus);
 
   //@ts-ignore
-    // ✅ Admin can cancel order
+    // Admin can cancel order
   router.put("/cancel/:id", authenticate, cancelOrder);
 
 
@@ -72,16 +72,16 @@ router.post("/assign-delivery", authenticate, assignDeliveryPerson);
 router.put("/update-role/:userId", authenticate ,updateUserRole);
 
 //@ts-ignore
-// ✅ Admin can add a product
+// Admin can add a product
 router.post("/add-product", authenticate,  addProduct);
 
 //@ts-ignore
-// ✅ Admin can update a product
+// Admin can update a product
 router.put("/update-product/:id", authenticate, updateProduct);
 
 
 //@ts-ignore
-// ✅ All user can view all products
+// All user can view all products
 router.get("/all-products", getAllProducts);
 
 //@ts-ignore
